@@ -52,7 +52,7 @@
 	var varyLineOpacityByHeight = [true,false].random();
 	var lineOverlapAlpha = [0,0.3,0.5,0.8,1].random();
 
-	var animateAndRedraw = [true,false].random();
+	var animateAndRedraw = [true, false, false, false, false, false].random();
 	var delayBetweeRedraws = [30,100,300,600,1000].random();
 
 
@@ -132,13 +132,16 @@
 	}
 
 	draw();
-
 	if (animateAndRedraw) {
 		window.setInterval(function() {
 			// call your function here
 			draw();
 		}, delayBetweeRedraws);
 	}	
+
+	window.setInterval(function() {
+		window.location.reload(false);
+	}, 30000);
 
 </script>
 </html>
