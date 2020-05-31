@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Joy Division</title>
+<style>
+	html, body {
+	  height: 100%;
+	  width: 100%;
+	  padding: 0;
+	  margin: 0;
+	}
+	canvas {
+		padding: 0;
+		margin: 0;
+	}
+</style>
+
+</head>
+
+<body>
+	<canvas style="height:100%;width:100%;"></canvas>
+</body>
+
+<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>-->
+<script type="text/javascript">
+	Array.prototype.random = function () {
+	  return this[Math.floor((Math.random()*this.length))];
+	}	
+
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+
+	// var initialLineStrokeWidth = 2;
+	// var numberOfLines = 7;
+	// var maxVariance = height/1.8;
+	// var weightingToPreviousLineVariance = 0.8; // [0-1]
+	// var allowNegativeVariance = true;
+	// var varyLineWidthByHeight = false;
+	// var varyLineOpacityByHeight = false;
+	// var lineOverlapAlpha = 0.7; // [0-1]
+	// var animateAndRedraw = false;
+	// var delayBetweeRedraws = 1000; // milliseconds
+
+	var initialLineStrokeWidth = [1,2,5,7].random();
+	var numberOfLines = [3,4,10,20,30,50,100,200].random();
+	var numberOfVariances = [width/2,width/5,width/10,width/20,width/40,width/100].random();
+	var maxVarianceHeight = [height/1.5,height/1.8,height/2,height/2.3].random();
+	var weightingToPreviousLineVariance = [0,0.5,0.8,0.9,0.95].random();
+	var allowNegativeVariance = [true,false].random();
+	var varyLineWidthByHeight = [true,false].random();
+	var varyLineOpacityByHeight = [true,false].random();
+	var lineOverlapAlpha = [0,0.3,0.5,0.8,1].random();
+
+	var animateAndRedraw = [true,false].random();
+	var delayBetweeRedraws = [30,100,300,600,1000].random();
+
+
+	//window.requestAnimationFrame(draw);
+
+	function draw() {
+		var canvas = document.querySelector('canvas');
+		var context = canvas.getContext('2d');
+		context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
+
+		var dpr = window.devicePixelRatio;
+		canvas.width = width * dpr;
+		canvas.height = height * dpr;
+		context.scale(dpr, dpr);
+
+		context.lineWidth = initialLineStrokeWidth;
+
+		var step = Math.ceil(height/numberOfLines);
+		var lines = [];
+
+		// Create the lines
+		var previousLine = null;
+		for(var i = maxVarianceHeight/2; i <= height - step; i += step) {
+		  var line = [];
+		  var pointIndex = 0;
+		  for(var j = 0; j <= width+numberOfVariances; j+= numberOfVariances) {
+			var distanceToCenter = Math.abs(j - width / 2);
+			var newVariance = Math.max(maxVarianceHeight - distanceToCenter, 0);
+			if( Math.random()>0.5 && allowNegativeVariance ) {
+				newVariance = newVariance*-1;
+			}
+			var randomVariance = Math.random() * newVariance / 1.8 * -1;
+			if (previousLine != null) { 
+				var previousVariance = previousLine[pointIndex].variance;
+				var randomVariance = (randomVariance*(1-weightingToPreviousLineVariance)+previousVariance*(weightingToPreviousLineVariance));
+			}
+			
+			var point = {x: j, y: i + randomVariance, variance:randomVariance};
+		    line.push(point);
+		    pointIndex++;
+		  } 
+		  previousLine = line;
+		  lines.push(line);
+		}
+
+		// Do the drawing
+		for(var i = 0; i < lines.length; i++) {
+			context.beginPath();
+			context.moveTo(lines[i][0].x, lines[i][0].y);
+
+	  		for(var j = 0; j < lines[i].length - 2; j++) {
+				var xc = (lines[i][j].x + lines[i][j + 1].x) / 2;
+				var yc = (lines[i][j].y + lines[i][j + 1].y) / 2;
+				context.quadraticCurveTo(lines[i][j].x, lines[i][j].y, xc, yc);
+			}
+			context.quadraticCurveTo(lines[i][j].x, lines[i][j].y, lines[i][j + 1].x, lines[i][j + 1].y);
+			
+			context.save();
+			context.globalCompositeOperation = 'destination-out';
+			context.fill();
+			context.restore();
+
+			var percentDownThePage = i/lines.length;
+			if (varyLineWidthByHeight) {
+				context.lineWidth = Math.ceil(percentDownThePage*6);
+			}
+			if (varyLineOpacityByHeight) {
+				context.strokeStyle = 'rgba(0,0,0,'+percentDownThePage+')';
+			}
+			context.fillStyle = 'rgba(0,0,0,'+lineOverlapAlpha+')';
+			context.stroke();
+		}
+
+		//window.requestAnimationFrame(draw);
+
+	}
+
+	draw();
+
+	if (animateAndRedraw) {
+		window.setInterval(function() {
+			// call your function here
+			draw();
+		}, delayBetweeRedraws);
+	}	
+
+</script>
+</html>
