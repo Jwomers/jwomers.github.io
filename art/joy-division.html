@@ -19,7 +19,7 @@
 </head>
 
 <body>
-	<canvas style="height:100%;width:100%;"></canvas>
+	<canvas style="height:100%;width:100%;" id="art-canvas"></canvas>
 </body>
 
 <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>-->
@@ -158,16 +158,20 @@
 
 		history.pushState({}, "New title", "?"+varsUrlString);
 	}
+	function redrawNewArt() {
+		var getUrl = window.location;
+		var baseUrl = getUrl.protocol + "//" + getUrl.host + "/" + getUrl.pathname;
+		window.location.href = baseUrl;
+	}
 
 	setupVariables();
 	draw();
 	saveVariablesToUrl();
 
 	window.setInterval(function() {
-		var getUrl = window.location;
-		var baseUrl = getUrl.protocol + "//" + getUrl.host + "/" + getUrl.pathname;
-		window.location.href = baseUrl;
-	}, 20000);
+		redrawNewArt();
+	}, 30000);
 
+	document.getElementById("art-canvas").addEventListener("click", redrawNewArt); 
 </script>
 </html>
