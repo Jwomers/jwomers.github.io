@@ -24,39 +24,51 @@
 
 <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>-->
 <script type="text/javascript">
+	
 	Array.prototype.random = function () {
 	  return this[Math.floor((Math.random()*this.length))];
 	}	
-
 	var width = window.innerWidth;
 	var height = window.innerHeight;
+	var parameters = {};	
+	var getVars = {};
 
-	// var initialLineStrokeWidth = 2;
-	// var numberOfLines = 7;
-	// var maxVariance = height/1.8;
-	// var weightingToPreviousLineVariance = 0.8; // [0-1]
-	// var allowNegativeVariance = true;
-	// var varyLineWidthByHeight = false;
-	// var varyLineOpacityByHeight = false;
-	// var lineOverlapAlpha = 0.7; // [0-1]
-	// var animateAndRedraw = false;
-	// var delayBetweeRedraws = 1000; // milliseconds
+	function setupVariables() {
+		// Array of parameters, each one of format:
+		// {variable_name, url_name, possible_values, transform_function_once_value_is_assigned}
+		var PARAMETER_DEFINITIONS = [
+			{name: "initialLineStrokeWidth", url_name: "ilsw", type: "integer", allowed_values: [1,2,5,7], preprocess_from_url: function(e) {return parseInt(e)}},
+			{name: "numberOfLines", url_name: "nol", type: "integer", allowed_values:[3,4,10,20,30,50,100,200], preprocess_from_url: function(e) {return parseInt(e)}},
 
-	var initialLineStrokeWidth = [1,2,5,7].random();
-	var numberOfLines = [3,4,10,20,30,50,100,200].random();
-	var numberOfVariances = [width/2,width/5,width/10,width/20,width/40,width/100].random();
-	var maxVarianceHeight = [height/1.5,height/1.8,height/2,height/2.3].random();
-	var weightingToPreviousLineVariance = [0,0.5,0.8,0.9,0.95].random();
-	var allowNegativeVariance = [true,false].random();
-	var varyLineWidthByHeight = [true,false].random();
-	var varyLineOpacityByHeight = [true,false].random();
-	var lineOverlapAlpha = [0,0.3,0.5,0.8,1].random();
+			{name: "numberOfVariances", url_name: "nov", type: "integer", allowed_values:[2,5,10,20,40,100], preprocess_from_url: function(e) {return parseInt(e)}, transform_function: function(e) {return  width/e}},
+			{name: "maxVarianceHeight", url_name: "mvh", type: "float", allowed_values:[1.5,1.8,2,2.3], preprocess_from_url: function(e) {return parseFloat(e)}, transform_function: function(e) {return  height/e}},
 
-	var animateAndRedraw = [true, false, false, false, false, false].random();
-	var delayBetweeRedraws = [30,100,300,600,1000].random();
+			{name: "weightingToPreviousLineVariance", type: "float", url_name: "wtplv", allowed_values:[0,0.5,0.8,0.9,0.95], preprocess_from_url: function(e) {return parseFloat(e)}},
+			{name: "lineOverlapAlpha", url_name: "loa", type: "float", allowed_values:[0,0.3,0.5,0.8,1], preprocess_from_url: function(e) {return parseFloat(e)}},
+			{name: "allowNegativeVariance", url_name: "anv", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return parseInt(e)}},
+			{name: "varyLineWidthByHeight", url_name: "vlwbh", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return parseInt(e)}},
+			{name: "varyLineOpacityByHeight", url_name: "clobh", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return parseInt(e)}},
+			{name: "animateAndRedraw", url_name: "aar", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return parseInt(e)}},
+			{name: "delayBetweeRedraws", url_name: "dbr", type: "boolean", allowed_values:[30,100,300,600,1000], preprocess_from_url: function(e) {return parseInt(e)}}
+		];
 
-
-	//window.requestAnimationFrame(draw);
+		// Set up variables
+		var url = new URL(window.location.href);
+		PARAMETER_DEFINITIONS.forEach(function(item) {
+			var urlParameter = url.searchParams.get(item.url_name);
+			if (urlParameter != null) {
+				urlParameter = item.preprocess_from_url(urlParameter);
+				if (!item.allowed_values.includes(urlParameter)) {
+					urlParameter = null;
+				}
+			}
+			parameters[item.name] = (urlParameter != null) ? urlParameter : item.allowed_values.random();
+			getVars[item.url_name] = parameters[item.name];
+			if (item.transform_function != null) {
+				parameters[item.name] = item.transform_function(parameters[item.name]);
+			}
+		});
+	}
 
 	function draw() {
 		var canvas = document.querySelector('canvas');
@@ -69,26 +81,26 @@
 		canvas.height = height * dpr;
 		context.scale(dpr, dpr);
 
-		context.lineWidth = initialLineStrokeWidth;
+		context.lineWidth = parameters["initialLineStrokeWidth"];
 
-		var step = Math.ceil(height/numberOfLines);
+		var step = Math.ceil(height/parameters["numberOfLines"]);
 		var lines = [];
 
 		// Create the lines
 		var previousLine = null;
-		for(var i = maxVarianceHeight/2; i <= height - step; i += step) {
+		for(var i = parameters["maxVarianceHeight"]/2; i <= height - step; i += step) {
 		  var line = [];
 		  var pointIndex = 0;
-		  for(var j = 0; j <= width+numberOfVariances; j+= numberOfVariances) {
+		  for(var j = 0; j <= width+parameters["numberOfVariances"]; j+= parameters["numberOfVariances"]) {
 			var distanceToCenter = Math.abs(j - width / 2);
-			var newVariance = Math.max(maxVarianceHeight - distanceToCenter, 0);
-			if( Math.random()>0.5 && allowNegativeVariance ) {
+			var newVariance = Math.max(parameters["maxVarianceHeight"] - distanceToCenter, 0);
+			if( Math.random()>0.5 && parameters["allowNegativeVariance"]) {
 				newVariance = newVariance*-1;
 			}
 			var randomVariance = Math.random() * newVariance / 1.8 * -1;
 			if (previousLine != null) { 
 				var previousVariance = previousLine[pointIndex].variance;
-				var randomVariance = (randomVariance*(1-weightingToPreviousLineVariance)+previousVariance*(weightingToPreviousLineVariance));
+				var randomVariance = (randomVariance*(1-parameters["weightingToPreviousLineVariance"])+previousVariance*(parameters["weightingToPreviousLineVariance"]));
 			}
 			
 			var point = {x: j, y: i + randomVariance, variance:randomVariance};
@@ -117,31 +129,45 @@
 			context.restore();
 
 			var percentDownThePage = i/lines.length;
-			if (varyLineWidthByHeight) {
+			if (parameters["varyLineWidthByHeight"]) {
 				context.lineWidth = Math.ceil(percentDownThePage*6);
 			}
-			if (varyLineOpacityByHeight) {
+			if (parameters["varyLineOpacityByHeight"]) {
 				context.strokeStyle = 'rgba(0,0,0,'+percentDownThePage+')';
 			}
-			context.fillStyle = 'rgba(0,0,0,'+lineOverlapAlpha+')';
+			context.fillStyle = 'rgba(0,0,0,'+parameters["lineOverlapAlpha"]+')';
 			context.stroke();
 		}
 
-		//window.requestAnimationFrame(draw);
-
+		if (parameters["animateAndRedraw"]) {
+			window.setInterval(function() {
+				// call your function here
+				draw();
+			}, parameters["delayBetweeRedraws"]);
+		}	
 	}
 
+	function saveVariablesToUrl() {
+		console.log(getVars);
+		var getVarsArray = [];
+		for (let [key, value] of Object.entries(getVars)) {
+			getVarsArray.push(key+"="+value);
+		}
+		varsUrlString =getVarsArray.join("&");
+		console.log(varsUrlString);
+
+		history.pushState({}, "New title", "?"+varsUrlString);
+	}
+
+	setupVariables();
 	draw();
-	if (animateAndRedraw) {
-		window.setInterval(function() {
-			// call your function here
-			draw();
-		}, delayBetweeRedraws);
-	}	
+	saveVariablesToUrl();
 
 	window.setInterval(function() {
-		window.location.reload(false);
-	}, 30000);
+		var getUrl = window.location;
+		var baseUrl = getUrl.protocol + "//" + getUrl.host + "/" + getUrl.pathname;
+		window.location.href = baseUrl;
+	}, 20000);
 
 </script>
 </html>
