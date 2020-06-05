@@ -160,7 +160,7 @@
 	}
 	function redrawNewArt() {
 		var getUrl = window.location;
-		var baseUrl = getUrl.protocol + "//" + getUrl.host + "/" + getUrl.pathname;
+		var baseUrl = getUrl.protocol + "//" + getUrl.host + getUrl.pathname;
 		window.location.href = baseUrl;
 	}
 
