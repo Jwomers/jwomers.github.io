@@ -45,10 +45,10 @@
 
 			{name: "weightingToPreviousLineVariance", type: "float", url_name: "wtplv", allowed_values:[0,0.5,0.8,0.9,0.95], preprocess_from_url: function(e) {return parseFloat(e)}},
 			{name: "lineOverlapAlpha", url_name: "loa", type: "float", allowed_values:[0,0.3,0.5,0.8,1], preprocess_from_url: function(e) {return parseFloat(e)}},
-			{name: "allowNegativeVariance", url_name: "anv", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return parseInt(e)}},
-			{name: "varyLineWidthByHeight", url_name: "vlwbh", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return parseInt(e)}},
-			{name: "varyLineOpacityByHeight", url_name: "clobh", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return parseInt(e)}},
-			{name: "animateAndRedraw", url_name: "aar", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return parseInt(e)}},
+			{name: "allowNegativeVariance", url_name: "anv", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return (e == 'true')}},
+			{name: "varyLineWidthByHeight", url_name: "vlwbh", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return e == 'true'}},
+			{name: "varyLineOpacityByHeight", url_name: "clobh", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return e == 'true'}},
+			{name: "animateAndRedraw", url_name: "aar", type: "boolean", allowed_values:[true,false], preprocess_from_url: function(e) {return e == 'true'}},
 			{name: "delayBetweeRedraws", url_name: "dbr", type: "boolean", allowed_values:[30,100,300,600,1000], preprocess_from_url: function(e) {return parseInt(e)}}
 		];
 
